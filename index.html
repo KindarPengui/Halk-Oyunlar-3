@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halk Oyunları Fon Müzikleri</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #121212;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #f39c12;
+            text-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+        }
+
+        /* 5 Köşeli Müzik Düzeni */
+        .container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Ortadaki Değiştirme Butonu */
+        .main-btn {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #e67e22, #d35400);
+            border: none;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(211, 84, 0, 0.6), inset 0 0 10px rgba(255,255,255,0.3);
+            z-index: 10;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .main-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(211, 84, 0, 0.9);
+        }
+
+        .main-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Etraftaki Şarkı Kartları */
+        .track-card {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            background: #1e1e1e;
+            border: 2px solid #333;
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.3;
+            transform: scale(0.8);
+            text-align: center;
+            padding: 10px;
+            pointer-events: none;
+        }
+
+        .track-card .icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .track-card .title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #bbb;
+        }
+
+        /* Aktif olan (Oynatılan) Şarkının Tarzı */
+        .track-card.active {
+            opacity: 1;
+            transform: scale(1.15);
+            border-color: #2ecc71;
+            box-shadow: 0 0 25px rgba(46, 204, 113, 0.4);
+            background: #252525;
+        }
+
+        .track-card.active .title {
+            color: #2ecc71;
+        }
+
+        /* Şarkıların dairesel konumları (5 yön) */
+        .card-0 { transform: translate(0, -180px); }
+        .card-1 { transform: translate(170px, -50px); }
+        .card-2 { transform: translate(100px, 150px); }
+        .card-3 { transform: translate(-100px, 150px); }
+        .card-4 { transform: translate(-170px, -50px); }
+
+        /* Aktif konumlandırma düzeltmesi */
+        .track-card.card-0.active { transform: translate(0, -180px) scale(1.15); }
+        .track-card.card-1.active { transform: translate(170px, -50px) scale(1.15); }
+        .track-card.card-2.active { transform: translate(100px, 150px) scale(1.15); }
+        .track-card.card-3.active { transform: translate(-100px, 150px) scale(1.15); }
+        .track-card.card-4.active { transform: translate(-170px, -50px) scale(1.15); }
+
+    </style>
+</head>
+<body>
+
+    <h1>Halk Oyunları Repertuarı</h1>
+
+    <div class="container">
+        <button class="main-btn" id="nextBtn">MÜZİĞİ<br>BAŞLAT</button>
+
+        <div class="track-card card-0" id="card-0">
+            <div class="icon">🥁</div>
+            <div class="title">Halay</div>
+        </div>
+        <div class="track-card card-1" id="card-1">
+            <div class="icon">🎻</div>
+            <div class="title">Zeybek</div>
+        </div>
+        <div class="track-card card-2" id="card-2">
+            <div class="icon">🪕</div>
+            <div class="title">Horon</div>
+        </div>
+        <div class="track-card card-3" id="card-3">
+            <div class="icon">🎺</div>
+            <div class="title">Bar</div>
+        </div>
+        <div class="track-card card-4" id="card-4">
+            <div class="icon">🎵</div>
+            <div class="title">Backfon</div>
+        </div>
+    </div>
+
+    <script>
+        // Kendi bilgisayarındaki müzik isimlerine göre burayı düzenleyebilirsin
+        const musicSources = [
+            "Halay.mp3",
+            "Zeybek.mp3",
+            "Horon.mp3",
+            "Bar.mp3",
+            "Backfon.mp3"
+        ];
+
+        let audios = [];
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+        let tracksPlayedCount = 0; // Kaç şarkı geçildiğini saymak için
+
+        const nextBtn = document.getElementById('nextBtn');
+
+        // Ses nesnelerini oluştur ve yükle
+        musicSources.forEach((src) => {
+            let audio = new Audio(src);
+            audio.loop = true; 
+            audios.push(audio);
+        });
+
+        // Tüm aktif görsel efektleri temizleme fonksiyonu
+        function clearAllActiveStyles() {
+            for(let i = 0; i < 5; i++) {
+                document.getElementById(`card-${i}`).classList.remove('active');
+            }
+        }
+
+        // Şarkı Değiştirme ve Döngü Kontrolü
+        function switchTrack() {
+            // Mevcut çalan şarkıyı durdur ve sıfırla
+            audios[currentTrackIndex].pause();
+            audios[currentTrackIndex].currentTime = 0;
+            document.getElementById(`card-${currentTrackIndex}`).classList.remove('active');
+
+            tracksPlayedCount++; // Dinlenen şarkı sayısını 1 artır
+
+            // Eğer 5 şarkı da tıklandıysa sistemi durdur ve sıfırla
+            if (tracksPlayedCount >= 5) {
+                isPlaying = false;
+                tracksPlayedCount = 0;
+                currentTrackIndex = 0; // Başa dönmeye hazırla
+                clearAllActiveStyles();
+                nextBtn.innerHTML = "YENİDEN<br>BAŞLAT";
+                return; // Fonksiyondan çık, yeni şarkıyı oynatma
+            }
+
+            // Sonraki şarkıya geç
+            currentTrackIndex = (currentTrackIndex + 1) % 5;
+
+            // Yeni şarkıyı oynat ve arayüzü güncelle
+            audios[currentTrackIndex].play().catch(error => console.log("Oynatma hatası: ", error));
+            document.getElementById(`card-${currentTrackIndex}`).classList.add('active');
+        }
+
+        // Butona basıldığında tetiklenecek ana olay
+        nextBtn.addEventListener('click', () => {
+            if (!isPlaying) {
+                // İlk defa basıldığında veya döngü bittikten sonra tekrar basıldığında çalışır
+                currentTrackIndex = 0;
+                tracksPlayedCount = 0;
+                clearAllActiveStyles();
+                
+                audios[currentTrackIndex].play().catch(error => console.log("Başlatma hatası: ", error));
+                document.getElementById(`card-${currentTrackIndex}`).classList.add('active');
+                
+                isPlaying = true;
+                nextBtn.innerHTML = "SONRAKİ<br>OYUN";
+            } else {
+                // Şarkılar arasında geçiş yaparken çalışır
+                switchTrack();
+            }
+        });
+    </script>
+
+</body>
+</html>
